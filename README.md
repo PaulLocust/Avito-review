@@ -1,6 +1,6 @@
 # 📝 Avito-review - Backend Service for PR assignments
 
-![Go](https://img.shields.io/badge/Go-1.21+-00ADD8?logo=go)
+![Go](https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-4169E1?logo=postgresql)
 ![Docker](https://img.shields.io/badge/Docker-24+-2496ED?logo=docker)
 ![Swagger](https://img.shields.io/badge/Swagger-3.0-85EA2D?logo=swagger)
