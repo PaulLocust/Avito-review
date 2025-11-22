@@ -2,8 +2,9 @@ package main
 
 import (
 	"log"
-	"github.com/PaulLocust/Avito-review/config"
 
+	"github.com/PaulLocust/Avito-review/config"
+	"github.com/PaulLocust/Avito-review/internal/app"
 )
 
 func main() {
@@ -13,6 +14,5 @@ func main() {
 		log.Fatalf("Config error: %s", err)
 	}
 
-	// Run TODO
-	// app.Run(cfg)
+	app.Run(cfg)
 }

@@ -8,10 +8,10 @@ import (
 
 type (
 	Config struct {
-		Log        Log
-		DB         DB
-		HTTP       HTTP
-		PGURL      PGURL
+		Log  Log
+		DB   DB
+		HTTP HTTP
+		PG   PG
 	}
 
 	HTTP struct {
@@ -31,10 +31,10 @@ type (
 		SSLMode  string `env:"DB_SSL,required"`
 	}
 
-	PGURL struct {
-		URL string `env:"PG_URL"`
+	PG struct {
+		URL     string `env:"PG_URL"`
+		PoolMax int    `env:"PG_POOL_MAX"`
 	}
-
 )
 
 // NewConfig returns app config.

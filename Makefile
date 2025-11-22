@@ -13,7 +13,7 @@ all: help
 
 run: .env
 	@echo "Trying to start application..."
-	@go run cmd/GoPVZ/main.go
+	@go run cmd/Avito-review/main.go
 
 migrate-up: .env
 	@echo "Applying database migrations..."
@@ -32,11 +32,11 @@ migrate-create: .env
 
 generate-dto:
 	@echo "Generating DTO types from OpenAPI spec..."
-	@oapi-codegen -generate types -package dto -o internal/dto/types.gen.go api/swagger.yaml
+	@oapi-codegen -generate types -package dto -o internal/dto/types.gen.go api/openapi.yml
 
 generate-swagger:
 	@echo "Generating Swagger documentation..."
-	@swag init --generalInfo internal/app/app.go --output ./docs --parseDependency --parseInternal
+	@swag init --generalInfo internal/controller/http/router.go --output ./docs --parseDependency --parseInternal
 
 help:
 	@echo "Available commands:"

@@ -1,0 +1,271 @@
+basePath: /api/v1
+definitions:
+  github_com_PaulLocust_Avito-review_internal_dto.ErrorResponse:
+    properties:
+      error:
+        properties:
+          code:
+            $ref: '#/definitions/github_com_PaulLocust_Avito-review_internal_dto.ErrorResponseErrorCode'
+          message:
+            type: string
+        type: object
+    type: object
+  github_com_PaulLocust_Avito-review_internal_dto.ErrorResponseErrorCode:
+    enum:
+    - NO_CANDIDATE
+    - NOT_ASSIGNED
+    - NOT_FOUND
+    - PR_EXISTS
+    - PR_MERGED
+    - TEAM_EXISTS
+    type: string
+    x-enum-varnames:
+    - NOCANDIDATE
+    - NOTASSIGNED
+    - NOTFOUND
+    - PREXISTS
+    - PRMERGED
+    - TEAMEXISTS
+  github_com_PaulLocust_Avito-review_internal_dto.PostPullRequestCreateJSONBody:
+    properties:
+      author_id:
+        type: string
+      pull_request_id:
+        type: string
+      pull_request_name:
+        type: string
+    type: object
+  github_com_PaulLocust_Avito-review_internal_dto.PostPullRequestMergeJSONBody:
+    properties:
+      pull_request_id:
+        type: string
+    type: object
+  github_com_PaulLocust_Avito-review_internal_dto.PostPullRequestReassignJSONBody:
+    properties:
+      old_user_id:
+        type: string
+      pull_request_id:
+        type: string
+    type: object
+  github_com_PaulLocust_Avito-review_internal_dto.PostUsersSetIsActiveJSONBody:
+    properties:
+      is_active:
+        type: boolean
+      user_id:
+        type: string
+    type: object
+  github_com_PaulLocust_Avito-review_internal_dto.Team:
+    properties:
+      members:
+        items:
+          $ref: '#/definitions/github_com_PaulLocust_Avito-review_internal_dto.TeamMember'
+        type: array
+      team_name:
+        type: string
+    type: object
+  github_com_PaulLocust_Avito-review_internal_dto.TeamMember:
+    properties:
+      is_active:
+        type: boolean
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Сервис назначения ревьюверов для Pull Request'ов
+  title: PR Reviewer Assignment Service
+  version: 1.0.0
+paths:
+  /pullRequest/create:
+    post:
+      consumes:
+      - application/json
+      description: Создает новый pull request и автоматически назначает до двух активных
+        ревьюверов из команды автора
+      parameters:
+      - description: Данные PR
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_PaulLocust_Avito-review_internal_dto.PostPullRequestCreateJSONBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: PR создан
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Автор/команда не найдены
+          schema:
+            $ref: '#/definitions/github_com_PaulLocust_Avito-review_internal_dto.ErrorResponse'
+        "409":
+          description: PR уже существует
+          schema:
+            $ref: '#/definitions/github_com_PaulLocust_Avito-review_internal_dto.ErrorResponse'
+      summary: Создать PR и автоматически назначить до 2 ревьюверов из команды автора
+      tags:
+      - PullRequests
+  /pullRequest/merge:
+    post:
+      consumes:
+      - application/json
+      description: Изменяет статус PR на MERGED. Операция идемпотентна - повторный
+        вызов не приводит к ошибке
+      parameters:
+      - description: Данные PR
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_PaulLocust_Avito-review_internal_dto.PostPullRequestMergeJSONBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: PR в состоянии MERGED
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: PR не найден
+          schema:
+            $ref: '#/definitions/github_com_PaulLocust_Avito-review_internal_dto.ErrorResponse'
+      summary: Пометить PR как MERGED (идемпотентная операция)
+      tags:
+      - PullRequests
+  /pullRequest/reassign:
+    post:
+      consumes:
+      - application/json
+      description: Заменяет одного ревьювера на случайного активного участника из
+        команды заменяемого ревьювера
+      parameters:
+      - description: Данные для переназначения
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_PaulLocust_Avito-review_internal_dto.PostPullRequestReassignJSONBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Переназначение выполнено
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: PR или пользователь не найден
+          schema:
+            $ref: '#/definitions/github_com_PaulLocust_Avito-review_internal_dto.ErrorResponse'
+        "409":
+          description: Нарушение доменных правил переназначения
+          schema:
+            $ref: '#/definitions/github_com_PaulLocust_Avito-review_internal_dto.ErrorResponse'
+      summary: Переназначить конкретного ревьювера на другого из его команды
+      tags:
+      - PullRequests
+  /team/add:
+    post:
+      consumes:
+      - application/json
+      description: Создает новую команду и обновляет/создает пользователей
+      parameters:
+      - description: Данные команды
+        in: body
+        name: team
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_PaulLocust_Avito-review_internal_dto.Team'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Команда создана
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Команда уже существует
+          schema:
+            $ref: '#/definitions/github_com_PaulLocust_Avito-review_internal_dto.ErrorResponse'
+      summary: Создать команду с участниками (создаёт/обновляет пользователей)
+      tags:
+      - Teams
+  /team/get:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает информацию о команде и её участниках
+      parameters:
+      - description: Уникальное имя команды
+        in: query
+        name: team_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Объект команды
+          schema:
+            $ref: '#/definitions/github_com_PaulLocust_Avito-review_internal_dto.Team'
+      summary: Получить команду с участниками
+      tags:
+      - Teams
+  /users/getReview:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список pull requests, назначенных пользователю на ревью
+      parameters:
+      - description: Идентификатор пользователя
+        in: query
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список PR'ов пользователя
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Получить PR'ы, где пользователь назначен ревьювером
+      tags:
+      - Users
+  /users/setIsActive:
+    post:
+      consumes:
+      - application/json
+      description: Изменяет статус активности пользователя
+      parameters:
+      - description: Данные пользователя
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_PaulLocust_Avito-review_internal_dto.PostUsersSetIsActiveJSONBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Обновлённый пользователь
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/github_com_PaulLocust_Avito-review_internal_dto.ErrorResponse'
+      summary: Установить флаг активности пользователя
+      tags:
+      - Users
+swagger: "2.0"

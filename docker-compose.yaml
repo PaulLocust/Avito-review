@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  avito-pvz-service:
+  service:
       build: .
       container_name: avito-review-service
       ports:
